@@ -67,7 +67,7 @@ class FilmControllerTest {
     class PostTests {
         @Test
         @DisplayName("Creation Of The Correct Task Must Be Successful")
-        void сreationOfTheCorrectTaskMustBeSuccessful() throws IOException, InterruptedException {
+        void createCorrectTaskMustBeSuccessful() throws IOException, InterruptedException {
             String film = "{\"name\": \"Film\"," +
                     "\"description\": \"Film desc\"," +
                     "\"releaseDate\": \"2022-05-05\"," +
