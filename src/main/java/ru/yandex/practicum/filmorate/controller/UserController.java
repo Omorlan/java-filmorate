@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,15 +8,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.DataFormatException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.validation.Valid;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -25,8 +23,8 @@ public class UserController {
     private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    public List<User> findAll() {
+        return users.values().stream().toList();
     }
 
     @PostMapping
@@ -34,13 +32,11 @@ public class UserController {
         try {
             // check necessary conditions
             userValidation(user);
-            // generate additional data
-            user.setId(getNextId());
-            log.debug("Set to user ID " + user.getId());
             // save the new user in the application memory
+            user.setId(getNextId());
             users.put(user.getId(), user);
             return user;
-        } catch (ConditionsNotMetException | DataFormatException | DuplicatedDataException exception) {
+        } catch (ValidationException exception) {
             log.error("Error occurred while creating user", exception);
             throw exception;
         }
@@ -49,10 +45,6 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User updatedUser) {
         try {
-            // check necessary conditions
-            if (updatedUser.getId() == null) {
-                throw new ConditionsNotMetException("The ID must be specified");
-            }
             if (users.containsKey(updatedUser.getId())) {
                 userValidation(updatedUser);
                 // if the user is found and all conditions are met, update its content
@@ -61,7 +53,7 @@ public class UserController {
                 return updatedUser;
             }
             throw new NotFoundException("User with id = " + updatedUser.getId() + " not found");
-        } catch (ConditionsNotMetException | DataFormatException | NotFoundException exception) {
+        } catch (ValidationException | NotFoundException exception) {
             log.error("Error occurred while updating user", exception);
             throw exception;
         }
@@ -69,11 +61,6 @@ public class UserController {
 
 
     public void userValidation(User user) {
-        if (user.getLogin().contains(" ")) {
-            String errorMessage = "Login contains spaces";
-            log.error(errorMessage);
-            throw new DataFormatException(errorMessage);
-        }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -81,15 +68,18 @@ public class UserController {
             if (existingUser.getEmail().equals(user.getEmail()) && existingUser.getId() != user.getId()) {
                 String errorMessage = "This email is already in use";
                 log.error(errorMessage);
-                throw new DuplicatedDataException(errorMessage);
+                throw new ValidationException(errorMessage);
             }
         }
     }
 
-
-    // auxiliary method for generating the identifier of a new user
     private long getNextId() {
-        long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
+        long currentMaxId = users.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
         return ++currentMaxId;
     }
+
 }

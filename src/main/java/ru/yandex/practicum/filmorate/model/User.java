@@ -1,22 +1,26 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.controller.validation.user.login.UserLogin;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Past;
 import java.time.LocalDate;
 
+@Builder
 @Data
 public class User {
-    Long id;
+    private Long id;
     @NotBlank(message = "Email address cannot be empty")
     @Email(message = "Incorrect email address format")
-    String email;
+    private String email;
     @NotBlank(message = "Login cannot be empty")
-    String login;
-    String name;
+    @UserLogin
+    private String login;
+    private String name;
     @Past(message = "Date of birth cannot be in the future")
-    LocalDate birthday;
+    private LocalDate birthday;
 }
 
