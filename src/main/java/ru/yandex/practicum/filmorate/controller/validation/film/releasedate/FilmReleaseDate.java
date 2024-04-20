@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
         validatedBy = {FilmReleaseDateValidation.class}
 )
 public @interface FilmReleaseDate {
-    String message() default "The release date cannot be earlier than 1895-12-28";
+    String message() default "Дата релиза не может быть раньше 1895-12-28";
 
     Class<?>[] groups() default {};
 

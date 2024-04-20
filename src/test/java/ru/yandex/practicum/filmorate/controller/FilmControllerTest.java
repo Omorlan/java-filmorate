@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +30,11 @@ class FilmControllerTest {
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
+    }
+    @AllArgsConstructor
+    static class ExpectedViolation {
+        String propertyPath;
+        String message;
     }
 
     void genDefaultFilm(int count) {
@@ -101,6 +107,7 @@ class FilmControllerTest {
         LocalDate releaseDate = LocalDate.of(1800, 11, 11);
         Film film = genSpecFilm("film", "film desc", releaseDate, 20L);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        ExpectedViolation expectedViolation = new ExpectedViolation("releaseDate","Дата релиза не может быть раньше 1895-12-28");
         assertFalse(violations.isEmpty());
     }
 
