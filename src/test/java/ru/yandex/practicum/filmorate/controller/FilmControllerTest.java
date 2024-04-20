@@ -31,6 +31,7 @@ class FilmControllerTest {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
+
     @AllArgsConstructor
     static class ExpectedViolation {
         String propertyPath;
