@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 public class Film {
     private Long id;
-    @NotBlank
+    @NotBlank(message = "не должно быть пустым")
     private String name;
     @Size(max = 200)
     private String description;
