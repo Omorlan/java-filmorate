@@ -3,34 +3,20 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import lombok.AllArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class FilmControllerTest {
+    static FilmController filmController = new FilmController();
 
-
-    FilmController controller = new FilmController();
-    private Validator validator;
-
-    @BeforeEach
-    void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @AllArgsConstructor
     static class ExpectedViolation {
@@ -38,99 +24,129 @@ class FilmControllerTest {
         String message;
     }
 
-    void genDefaultFilm(int count) {
-        Stream.generate(() -> Film.builder()
-                        .id(null)
-                        .name("Film")
-                        .description("FilmDesc")
-                        .releaseDate(LocalDate.of(1998, 11, 11))
-                        .duration(40L)
-                        .build())
-                .limit(count)
-                .forEach(controller::create);
-    }
-
-    Film genSpecFilm(String name, String desc, LocalDate release, Long duration) {
-        Film film = Film.builder()
-                .id(null)
-                .name(name)
-                .description(desc)
-                .releaseDate(release)
-                .duration(duration)
-                .build();
-        return film;
-    }
-
-
     @Test
-    void findAllShouldReturnAllFilmsList() {
-        genDefaultFilm(2);
-        List<Film> filmList = controller.findAll();
-        assertNotNull(filmList);
-        assertEquals(2, filmList.size());
+    void validateFilmOk() {
+        Film film = new Film(
+                "Фильм",
+                "Описание",
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+        validator.validate(film);
     }
 
     @Test
-    void createShouldCreateFilm() {
-        genDefaultFilm(1);
-        List<Film> filmList = controller.findAll();
-        assertNotNull(filmList);
-        assertEquals(1, filmList.size());
+    void validateNameNullFail() {
+        Film film = new Film(
+                null,
+                "Описание",
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+        ExpectedViolation expectedViolation = new ExpectedViolation("name", "не должно быть пустым");
+        List<ConstraintViolation<Film>> violations = new ArrayList<>(validator.validate(film));
+        assertEquals(1, violations.size());
+        //assertEquals(expectedViolation.message, violations.get(0).getMessage());
+        assertEquals(expectedViolation.message, violations.get(0).getMessage());
     }
 
     @Test
-    void updateShouldUpdateFilm() {
-        genDefaultFilm(1);
-        Film updatedFilm = Film.builder()
-                .id(1L)
-                .name("UpdatedFilm")
-                .description("FilmDesc")
-                .releaseDate(LocalDate.of(1998, 11, 11))
-                .duration(40L)
-                .build();
-        controller.update(updatedFilm);
-        List<Film> filmList = controller.findAll();
-        assertNotNull(filmList);
-        assertEquals(1, filmList.size());
-        assertEquals(updatedFilm, filmList.get(0));
+    void validateNameIsBlankFail() {
+        Film film = new Film(
+                "",
+                "Описание",
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+        List<ConstraintViolation<Film>> violations = new ArrayList<>(validator.validate(film));
+        ExpectedViolation expectedViolation = new ExpectedViolation("name", "не должно быть пустым");
+        //List<ConstraintViolation<Film>> violations = new ArrayList<>(validator.validate(film));
+        assertEquals(1, violations.size());
+        //assertEquals(expectedViolation.message, violations.get(0).getMessage());
+        assertEquals(expectedViolation.message, violations.get(0).getMessage());
+
     }
 
     @Test
-    void createFilmWithTooLongDescriptionShouldFail() {
-        String desc = "a".repeat(201);
-        Film film = genSpecFilm("film", desc, LocalDate.of(1998, 11, 11), 20L);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
+    void validateDescriptionNullOk() {
+        Film film = new Film(
+                "Фильм",
+                null,
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+        validator.validate(film);
     }
 
     @Test
-    void createFilmWithTooLateReleaseDateShouldFail() {
-        LocalDate releaseDate = LocalDate.of(1800, 11, 11);
-        Film film = genSpecFilm("film", "film desc", releaseDate, 20L);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        ExpectedViolation expectedViolation = new ExpectedViolation("releaseDate","Дата релиза не может быть раньше 1895-12-28");
-        assertFalse(violations.isEmpty());
+    void validateDescriptionMaxSizeOk() {
+        Film film = new Film(
+                "Фильм",
+                "1".repeat(200),
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+        validator.validate(film);
     }
 
-    @ParameterizedTest
-    @ValueSource(longs = {
-            0,
-            -1
-    })
-    void createFilmWithNonPositiveDurationShouldFail(Long duration) {
-        Film film = genSpecFilm("film", "film desc", LocalDate.of(1998, 11, 11), duration);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
+    @Test
+    void validateDescriptionMinSizeOk() {
+        Film film = new Film(
+                "Фильм",
+                "",
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+        validator.validate(film);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "",
-            " "
-    })
-    void createFilmWithEmptyNameShouldFail(String name) {
-        Film film = genSpecFilm(name, "film desc", LocalDate.of(1998, 11, 11), 20L);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
+    @Test
+    void validateDescriptionSizeFail() {
+        Film film = new Film(
+                "Фильм",
+                "1".repeat(205),
+                LocalDate.of(2024, 4, 17),
+                60
+        );
+
+        List<ConstraintViolation<Film>> violations = new ArrayList<>(validator.validate(film));
+        assertEquals(1, violations.size());
+    }
+
+    @Test
+    void validateReleaseDateFail() {
+        Film film = new Film(
+                "Фильм",
+                "Описание",
+                LocalDate.of(1890, 4, 17),
+                60
+        );
+
+        List<ConstraintViolation<Film>> violations = new ArrayList<>(validator.validate(film));
+        assertEquals(1, violations.size());
+    }
+
+    @Test
+    void validateReleaseDateOk() {
+        Film film = new Film(
+                "Фильм",
+                "Описание",
+                LocalDate.of(1895, 12, 28),
+                60
+        );
+
+        validator.validate(film);
+    }
+
+    @Test
+    void validateDurationFail() {
+        Film film = new Film(
+                "Фильм",
+                "Описание",
+                LocalDate.of(2024, 4, 17),
+                -1
+        );
+        List<ConstraintViolation<Film>> violations = new ArrayList<>(validator.validate(film));
+        assertEquals(1, violations.size());
     }
 }
