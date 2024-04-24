@@ -8,6 +8,7 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.controller.validation.user.login.UserLogin;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @Data
@@ -22,5 +23,6 @@ public class User {
     private String name;
     @Past(message = "Date of birth cannot be in the future")
     private LocalDate birthday;
+    private Set<Long> friends;
 }
 

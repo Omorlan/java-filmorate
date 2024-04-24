@@ -8,6 +8,7 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.controller.validation.film.releasedate.FilmReleaseDate;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 /**
  * Film.
@@ -24,4 +25,5 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Value must be positive")
     private Long duration;
+    private Set<Long> likes;
 }
