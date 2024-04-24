@@ -6,5 +6,6 @@ public class Constants {
     private Constants() {
         throw new IllegalStateException("Utility class");
     }
+
     public static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
 }
