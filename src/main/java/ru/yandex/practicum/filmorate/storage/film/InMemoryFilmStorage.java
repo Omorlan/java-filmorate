@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-@Component("inMemoryFilmStorage")
+@Component
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();

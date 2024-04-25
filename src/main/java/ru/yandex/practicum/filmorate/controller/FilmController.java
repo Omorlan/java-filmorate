@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private FilmService filmService;
+    private final FilmService filmService;
 
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
@@ -44,7 +44,7 @@ public class FilmController {
         return filmService.update(updatedFilm);
     }
 
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Long id) {
         return filmService.getFilm(id);
     }
