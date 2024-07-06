@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
 
@@ -44,6 +44,11 @@ public class FilmController {
         return filmService.update(updatedFilm);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable Long id) {
+        filmService.remove(id);
+    }
+
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Long id) {
         return filmService.getFilm(id);
@@ -60,7 +65,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") int count) {
-        return filmService.getTenMostPopularFilms(count);
+    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Long count) {
+        return filmService.getPopularFilms(count);
     }
 }

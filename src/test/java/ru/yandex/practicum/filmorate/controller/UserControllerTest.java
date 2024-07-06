@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.user.UserService;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorageDb;
+import ru.yandex.practicum.filmorate.storage.user.UserStorageDb;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,16 +25,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class UserControllerTest {
 
-    private InMemoryFilmStorage storage;
-    private InMemoryUserStorage userStorage;
+    private FilmStorageDb storage;
+    private UserStorageDb userStorage;
     private UserService userService;
     private UserController controller;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        storage = new InMemoryFilmStorage();
-        userStorage = new InMemoryUserStorage();
         userService = new UserService(userStorage);
         controller = new UserController(userService);
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();

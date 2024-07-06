@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller.validation.constant;
+package ru.yandex.practicum.filmorate.util.constant;
 
 import java.time.LocalDate;
 
