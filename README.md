@@ -5,9 +5,9 @@ erDiagram
    
     users {
         user_id integer PK
-        user_name varchar(256)
-        user_login varchar(40)
-        user_email varchar(256)
+        user_name varchar(128)
+        user_login varchar(20)
+        user_email varchar(128)
         user_birthday timestamp
     }
 
@@ -31,12 +31,12 @@ erDiagram
 
     genres {
         genre_id integer PK
-        genre_name varchar(256)
+        genre_name varchar(128)
     }
 
     mpa {
         mpa_id integer PK
-        mpa_name varchar(256)
+        mpa_name varchar(40)
     }
 
     film_genres {
