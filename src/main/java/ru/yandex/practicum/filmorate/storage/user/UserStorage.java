@@ -4,13 +4,10 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public interface UserStorage {
     User getUserById(Long id);
-
-    Map<Long, User> getUsersMap();
 
     List<User> findAll();
 
@@ -18,5 +15,13 @@ public interface UserStorage {
 
     void remove(Long id);
 
+    void addFriend(Long id, Long friendId);
+
+    void removeFriend(Long id, Long friendId);
+
     User update(User user);
+
+    List<User> getUserFriends(Long id);
+
+    List<User> getSameFriends(Long id, Long otherId);
 }
