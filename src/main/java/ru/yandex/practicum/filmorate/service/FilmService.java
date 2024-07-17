@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorageDb;
@@ -54,5 +55,14 @@ public class FilmService {
 
     public List<Film> getPopularFilms(Long count) {
         return filmStorageDb.getPopularFilms(count);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        userStorageDb.getUserById(userId);
+        userStorageDb.getUserById(friendId);
+        userStorageDb.getUserFriends(userId).stream()
+                .filter(user -> user.getId().equals(friendId))
+                .findFirst().orElseThrow(() -> new ValidationException("user id = " + userId + " friendId = " + friendId + " not friends"));
+        return filmStorageDb.getCommonFilms(userId, friendId);
     }
 }

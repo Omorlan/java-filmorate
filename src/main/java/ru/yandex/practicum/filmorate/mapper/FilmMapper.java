@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.mapper;
 
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 import static ru.yandex.practicum.filmorate.util.DateUtil.toLocalDate;
 
+@Component
 public class FilmMapper implements ResultSetExtractor<List<Film>> {
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {

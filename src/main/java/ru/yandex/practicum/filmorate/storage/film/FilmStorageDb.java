@@ -27,6 +27,7 @@ import java.util.Optional;
 @Getter
 public class FilmStorageDb implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmMapper filmMapper;
 
     @Override
     public Film create(Film film) {
@@ -128,7 +129,7 @@ public class FilmStorageDb implements FilmStorage {
                     LEFT JOIN genres g ON fg.genre_id = g.genre_id
                     LEFT JOIN likes l ON f.film_id = l.film_id
                 """;
-        List<Film> films = jdbcTemplate.query(sqlQuery, new FilmMapper());
+        List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper);
         log.info("Fetched {} films", films.size());
         return films;
     }
@@ -201,8 +202,20 @@ public class FilmStorageDb implements FilmStorage {
                 LEFT JOIN likes l ON f.film_id = l.film_id
                 ORDER BY popular.like_count DESC, f.film_id
                 """;
-        List<Film> popularFilms = jdbcTemplate.query(sqlQuery, new FilmMapper(), count);
+        List<Film> popularFilms = jdbcTemplate.query(sqlQuery, filmMapper, count);
         log.info("Fetched {} popular films", popularFilms.size());
         return popularFilms;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String query = """
+                SELECT f.film_id, f.film_name, f.film_description, f.duration, f.film_releaseDate, f.mpa_id
+                FROM films AS f
+                INNER JOIN likes AS l1 ON l1.film_id = f.film_id
+                INNER JOIN likes AS l2 ON l2.film_id = f.film_id
+                WHERE l1.user_id = ? AND l2.user_id = ?;
+                """;
+        return jdbcTemplate.query(query, filmMapper, userId, friendId);
     }
 }
