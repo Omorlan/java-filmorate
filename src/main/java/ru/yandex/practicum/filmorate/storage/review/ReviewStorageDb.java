@@ -201,6 +201,7 @@ public class ReviewStorageDb implements ReviewStorage {
         if (userCount == null || userCount == 0) {
             throw new NotFoundException("User with id " + userId + " does not exist");
         }
+
         if (filmCount == null || filmCount == 0) {
             throw new NotFoundException("Film with id " + filmId + " does not exist");
         }
