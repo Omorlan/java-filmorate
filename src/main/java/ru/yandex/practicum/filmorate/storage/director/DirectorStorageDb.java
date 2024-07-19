@@ -30,8 +30,6 @@ public class DirectorStorageDb implements DirectorStorage {
     @Override
     public Director getById(int id) {
         log.info("Fetching director with id: {}", id);
-        /*final String sqlQuery = "SELECT * FROM directors WHERE director_id = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, DirectorMapper::makeDirector, id));*/
         List<Director> directors = getAll();
         Optional<Director> optionalDirector = directors.stream()
                 .filter(f -> f.getId() == id)

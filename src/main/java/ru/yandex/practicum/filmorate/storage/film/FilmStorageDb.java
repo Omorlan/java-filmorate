@@ -122,9 +122,7 @@ public class FilmStorageDb implements FilmStorage {
                     LEFT JOIN film_directors fd ON f.film_id = fd.film_id
                     LEFT JOIN directors d ON fd.director_id = d.director_id
                 """;
-        List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper);
-        //log.info("Fetched {} films", films.size());
-        return films;
+        return jdbcTemplate.query(sqlQuery, filmMapper);
     }
 
     @Override
