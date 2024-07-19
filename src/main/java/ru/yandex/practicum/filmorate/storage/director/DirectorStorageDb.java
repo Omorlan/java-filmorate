@@ -3,16 +3,16 @@ package ru.yandex.practicum.filmorate.storage.director;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 
+import java.sql.PreparedStatement;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,8 +30,20 @@ public class DirectorStorageDb implements DirectorStorage {
     @Override
     public Director getById(int id) {
         log.info("Fetching director with id: {}", id);
-        final String sqlQuery = "SELECT * FROM directors WHERE director_id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, DirectorMapper::makeDirector, id);
+        /*final String sqlQuery = "SELECT * FROM directors WHERE director_id = ?";
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, DirectorMapper::makeDirector, id));*/
+        List<Director> directors = getAll();
+        Optional<Director> optionalDirector = directors.stream()
+                .filter(f -> f.getId() == id)
+                .findFirst();
+
+        if (optionalDirector.isPresent()) {
+            log.info("Film found: {}", optionalDirector.get());
+            return optionalDirector.get();
+        } else {
+            log.error("Director with id {} not found", id);
+            throw new NotFoundException("Director id = " + id + " not found");
+        }
     }
 
     @Override
@@ -39,12 +51,15 @@ public class DirectorStorageDb implements DirectorStorage {
         log.info("Creating director: {}", director);
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         String sqlQuery = """
-                INSERT INTO directors (directors_name)
-                VALUES (:name)
+                INSERT INTO directors (director_name)
+                VALUES (?)
                 """;
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("name", director.getName());
-        jdbcTemplate.update(sqlQuery, params, keyHolder);
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"director_id"});
+            stmt.setString(1, director.getName());
+            return stmt;
+        }, keyHolder);
 
         Integer id = Objects.requireNonNull(keyHolder.getKeyAs(Integer.class));
         director.setId(id);
@@ -58,19 +73,17 @@ public class DirectorStorageDb implements DirectorStorage {
         log.info("Updating director: {}", director);
         String sqlQuery = """
                 UPDATE directors
-                SET director_name = :name
-                WHERE director_id = :directorId
+                SET director_name = ?
+                WHERE director_id = ?
                 """;
-        Map<String, Object> map = Map.of("directorId", director.getId(), "director_name", director.getName());
-        jdbcTemplate.update(sqlQuery, map);
+        jdbcTemplate.update(sqlQuery, director.getName(), director.getId());
 
         return director;
     }
 
     @Override
     public void delete(int id) {
-        String sqlQuery = "DELETE FROM directors WHERE director_id = :directorID";
-        Map<String, Object> map = Map.of("directorId", id);
-        jdbcTemplate.update(sqlQuery, map);
+        String sqlQuery = "DELETE FROM directors WHERE director_id = ?";
+        jdbcTemplate.update(sqlQuery, id);
     }
 }
