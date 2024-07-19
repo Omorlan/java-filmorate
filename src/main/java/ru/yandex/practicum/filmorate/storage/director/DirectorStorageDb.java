@@ -31,8 +31,9 @@ public class DirectorStorageDb implements DirectorStorage {
     public Director getById(int id) {
         log.info("Fetching director with id: {}", id);
         String sql = "SELECT * FROM directors WHERE director_id = ?";
-        List<Director> genres = jdbcTemplate.query(sql, DirectorMapper::makeDirector, id);
-        Optional<Director> optionalDirector = genres.stream().findFirst();
+        Optional<Director> optionalDirector = jdbcTemplate.query(sql, DirectorMapper::makeDirector, id)
+                .stream()
+                .findFirst();
         if (optionalDirector.isPresent()) {
             log.info("Film found: {}", optionalDirector.get());
             return optionalDirector.get();
