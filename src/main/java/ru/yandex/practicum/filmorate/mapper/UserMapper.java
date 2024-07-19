@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
@@ -8,7 +7,6 @@ import java.sql.SQLException;
 
 import static ru.yandex.practicum.filmorate.util.DateUtil.toLocalDate;
 
-@Component
 public class UserMapper {
     public static User makeUser(ResultSet rs, int rowNum) throws SQLException {
         return User.builder()
