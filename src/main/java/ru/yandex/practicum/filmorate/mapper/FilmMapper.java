@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.mapper;
 
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -15,6 +17,7 @@ import java.util.Map;
 
 import static ru.yandex.practicum.filmorate.util.DateUtil.toLocalDate;
 
+@Component
 public class FilmMapper implements ResultSetExtractor<List<Film>> {
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {
@@ -26,6 +29,7 @@ public class FilmMapper implements ResultSetExtractor<List<Film>> {
 
             addGenreIfPresent(rs, film);
             addLikeIfPresent(rs, film);
+            addDirectorIfPresent(rs, film);
         }
         return new ArrayList<>(filmMap.values());
     }
@@ -42,6 +46,7 @@ public class FilmMapper implements ResultSetExtractor<List<Film>> {
                     .mpa(mpa)
                     .genres(new LinkedHashSet<>())
                     .likes(new LinkedHashSet<>())
+                    .directors(new LinkedHashSet<>())
                     .build();
         } catch (SQLException e) {
             throw new RuntimeException("Error creating Film object from ResultSet", e);
@@ -61,6 +66,15 @@ public class FilmMapper implements ResultSetExtractor<List<Film>> {
         Long likeUserId = rs.getLong("like_user_id");
         if (!rs.wasNull()) {
             film.getLikes().add(likeUserId);
+        }
+    }
+
+    private void addDirectorIfPresent(ResultSet rs, Film film) throws SQLException {
+        int directorId = rs.getInt("director_id");
+        if (!rs.wasNull()) {
+            String directorName = rs.getString("director_name");
+            Director director = new Director(directorId, directorName);
+            film.getDirectors().add(director);
         }
     }
 }
