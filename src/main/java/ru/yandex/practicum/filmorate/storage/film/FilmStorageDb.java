@@ -234,7 +234,8 @@ public class FilmStorageDb implements FilmStorage {
                 WHERE l1.user_id = ? AND l2.user_id = ?;
                 """;
         return jdbcTemplate.query(query, filmMapper, userId, friendId);
-=======
+    }
+
     private void addFilmGenres(Film film) {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             final String genreInsertQuery = """
