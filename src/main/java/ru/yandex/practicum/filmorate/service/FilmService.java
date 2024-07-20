@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorageDb;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -14,11 +15,13 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorageDb;
     private final UserStorage userStorageDb;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(FilmStorageDb filmStorageDb, UserStorageDb userStorageDb) {
+    public FilmService(FilmStorageDb filmStorageDb, UserStorageDb userStorageDb, DirectorStorage directorStorage) {
         this.filmStorageDb = filmStorageDb;
         this.userStorageDb = userStorageDb;
+        this.directorStorage = directorStorage;
     }
 
     public Film getFilm(Long id) {
@@ -60,5 +63,10 @@ public class FilmService {
         userStorageDb.getUserById(userId);
         userStorageDb.getUserById(friendId);
         return filmStorageDb.getCommonFilms(userId, friendId);
+    }
+  
+    public List<Film> getByDirector(int directorId, String sortBy) {
+        directorStorage.getById(directorId);
+        return filmStorageDb.getByDirector(directorId, sortBy);
     }
 }
