@@ -52,8 +52,20 @@ erDiagram
         useful integer
     }
 
+   reviews {
+        review_id integer PK
+        content varchar(1024)
+        is_positive boolean
+        user_id integer FK
+        film_id integer FK
+        useful integer
+    }
+
     review_likes {
         review_id integer PK, FK
+        user_id integer PK, FK
+        is_useful boolean
+    }
         
 
     users ||--|{ likes: contains
