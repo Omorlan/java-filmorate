@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -10,14 +10,10 @@ import ru.yandex.practicum.filmorate.storage.review.ReviewStorageDb;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class ReviewService {
     private final ReviewStorageDb reviewStorageDb;
-
-    @Autowired
-    public ReviewService(ReviewStorageDb reviewStorageDb) {
-        this.reviewStorageDb = reviewStorageDb;
-    }
 
     public Review create(Review review) {
         return reviewStorageDb.create(review);

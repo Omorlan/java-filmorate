@@ -3,24 +3,22 @@ package ru.yandex.practicum.filmorate.storage.review;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.mapper.review.ReviewMapper;
+import ru.yandex.practicum.filmorate.mapper.review.ReviewUsefulMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+@Repository
 public class ReviewStorageDb implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -48,14 +46,17 @@ public class ReviewStorageDb implements ReviewStorage {
         review.setReviewId(reviewId);
         log.info("Review created: {}", review);
         return review;
+
+
     }
 
     @Override
     public Review update(Review review) {
         checkUserAndFilmExistence(review.getUserId(), review.getFilmId());
         log.info("Updating review: {}", review);
-        Review reviewToUpdate = getReview(review.getReviewId()).orElseThrow(() ->
-                new NotFoundException("Review with id = " + review.getReviewId() + " not found"));
+        if (!isReviewExists(review.getReviewId())) {
+            throw new NotFoundException("Review with id = " + review.getReviewId() + " not found");
+        }
         final String sqlQuery = """
                 UPDATE reviews
                 SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ?
@@ -80,8 +81,9 @@ public class ReviewStorageDb implements ReviewStorage {
     @Override
     public void remove(Long id) {
         log.info("Removing review with id: {}", id);
-        Review reviewToRemove = getReview(id).orElseThrow(() ->
-                new NotFoundException("Review with id = " + id + " not found"));
+        if (!isReviewExists(id)) {
+            throw new NotFoundException("Review with id = " + id + " not found");
+        }
         final String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         jdbcTemplate.update(sqlQuery, id);
         log.info("Review with id {} removed", id);
@@ -90,7 +92,7 @@ public class ReviewStorageDb implements ReviewStorage {
     @Override
     public List<Review> findAll() {
         log.info("Fetching all reviews");
-        return jdbcTemplate.query("SELECT * FROM reviews", new ReviewMapper());
+        return jdbcTemplate.query("SELECT * FROM reviews", ReviewMapper::makeReview);
     }
 
     @Override
@@ -101,7 +103,7 @@ public class ReviewStorageDb implements ReviewStorage {
                 WHERE review_id = ?
                 """;
 
-        return jdbcTemplate.query(sqlQuery, new ReviewMapper(), reviewId).stream().findFirst();
+        return jdbcTemplate.query(sqlQuery, ReviewMapper::makeReview, reviewId).stream().findFirst();
     }
 
     @Override
@@ -116,10 +118,10 @@ public class ReviewStorageDb implements ReviewStorage {
 
         if (filmId == null) {
             sqlQuery = "SELECT * FROM reviews LIMIT ?";
-            reviews = jdbcTemplate.query(sqlQuery, new ReviewMapper(), count);
+            reviews = jdbcTemplate.query(sqlQuery, ReviewMapper::makeReview, count);
         } else {
             sqlQuery = "SELECT * FROM reviews WHERE film_id = ? LIMIT ?";
-            reviews = jdbcTemplate.query(sqlQuery, new ReviewMapper(), filmId, count);
+            reviews = jdbcTemplate.query(sqlQuery, ReviewMapper::makeReview, filmId, count);
         }
 
         log.info("Fetched {} reviews", reviews.size());
@@ -177,16 +179,10 @@ public class ReviewStorageDb implements ReviewStorage {
                 WHERE review_id = ?
                 """;
 
-        return jdbcTemplate.query(sqlQuery, new ReviewRatingMapper(), reviewId).stream().findAny().orElseThrow(() ->
+        return jdbcTemplate.query(sqlQuery, ReviewUsefulMapper::makeUseful, reviewId).stream().findAny().orElseThrow(() ->
                 new NotFoundException("Review id = " + reviewId + " not found"));
     }
 
-    private static class ReviewRatingMapper implements RowMapper<Long> {
-        @Override
-        public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return rs.getLong("useful");
-        }
-    }
 
     private void checkUserAndFilmExistence(Long userId, Long filmId) {
         Objects.requireNonNull(userId, "userId cannot be null");
@@ -207,4 +203,8 @@ public class ReviewStorageDb implements ReviewStorage {
         }
     }
 
+    private boolean isReviewExists(Long reviewId) {
+        final String sqlQuery = "SELECT EXISTS (SELECT 1 FROM reviews WHERE review_id = ?)";
+        return jdbcTemplate.queryForObject(sqlQuery, Boolean.class, reviewId);
+    }
 }

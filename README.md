@@ -43,6 +43,18 @@ erDiagram
         film_id integer PK, FK
         genre_id integer PK, FK
     }
+        reviews {
+        review_id integer PK
+        content varchar(1024)
+        is_positive boolean
+        user_id integer FK
+        film_id integer FK
+        useful integer
+    }
+
+    review_likes {
+        review_id integer PK, FK
+        
 
     users ||--|{ likes: contains
     films ||--|{ likes: contains
@@ -50,4 +62,8 @@ erDiagram
     films ||--|{ film_genres: contains
     film_genres ||--|{ genres: contains
     films ||--|{ mpa: contains
+    users ||--|{ reviews: creates
+    films ||--|{ reviews: contains
+    reviews ||--|{ review_likes: receives
+    users ||--|{ review_likes: likes
 ```
