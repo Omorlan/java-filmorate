@@ -127,7 +127,9 @@ public class FilmStorageDb implements FilmStorage {
                     LEFT JOIN film_directors fd ON f.film_id = fd.film_id
                     LEFT JOIN directors d ON fd.director_id = d.director_id
                 """;
-        return jdbcTemplate.query(sqlQuery, filmMapper);
+        List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper);
+        log.info("Fetched {} films", films.size());
+        return films;
     }
 
     @Override
@@ -209,9 +211,36 @@ public class FilmStorageDb implements FilmStorage {
                 LEFT JOIN likes l ON f.film_id = l.film_id
                 ORDER BY popular.like_count DESC, f.film_id
                 """;
-        List<Film> popularFilms = jdbcTemplate.query(sqlQuery, new FilmMapper(), count);
+        List<Film> popularFilms = jdbcTemplate.query(sqlQuery, filmMapper, count);
         log.info("Fetched {} popular films", popularFilms.size());
         return popularFilms;
+    }
+
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String query = """
+                SELECT f.*
+                     , m.mpa_id
+                     , m.mpa_name
+                     , g.genre_id
+                     , g.genre_name
+                     , l.user_id AS like_user_id
+                     , d.director_id
+                     , d.director_name
+                FROM films AS f
+                         INNER JOIN likes AS l1 ON l1.film_id = f.film_id
+                         INNER JOIN likes AS l2 ON l2.film_id = f.film_id
+                         INNER JOIN mpa AS m ON m.mpa_id = f.mpa_id
+                         INNER JOIN film_genres AS fg ON fg.film_id = f.film_id
+                         INNER JOIN genres AS g ON g.genre_id = fg.genre_id
+                         INNER JOIN likes AS l ON f.film_id = l.film_id
+                         LEFT JOIN film_directors AS fd ON fd.film_id = f.film_id
+                         LEFT JOIN directors AS d ON fd.director_id = d.director_id
+                WHERE l1.user_id = ?
+                  AND l2.user_id = ?;
+                """;
+        return jdbcTemplate.query(query, filmMapper, userId, friendId);
     }
 
     private void addFilmGenres(Film film) {
