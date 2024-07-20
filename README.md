@@ -2,16 +2,15 @@
 Template repository for Filmorate project.
 ```mermaid
 erDiagram
-   
-    users {
+    USERS {
         user_id integer PK
         user_name varchar(128)
-        user_login varchar(20)
+        user_login varchar(40)
         user_email varchar(128)
         user_birthday timestamp
     }
 
-    films {
+    FILMS {
         film_id integer PK
         film_name varchar(256)
         film_description varchar(256)
@@ -19,31 +18,34 @@ erDiagram
         film_releaseDate timestamp
         mpa_id integer FK
     }
-    friendship {
+
+    FRIENDSHIP {
         accepting_user_id integer PK, FK
         requesting_user_id integer PK, FK
         status varchar(40)
     }
-    likes {
+
+    LIKES {
         film_id integer PK
         user_id integer PK
     }
 
-    genres {
+    GENRES {
         genre_id integer PK
         genre_name varchar(128)
     }
 
-    mpa {
+    MPA {
         mpa_id integer PK
         mpa_name varchar(40)
     }
 
-    film_genres {
+    FILM_GENRES {
         film_id integer PK, FK
         genre_id integer PK, FK
     }
-        reviews {
+
+    REVIEWS {
         review_id integer PK
         content varchar(1024)
         is_positive boolean
@@ -52,30 +54,21 @@ erDiagram
         useful integer
     }
 
-   reviews {
-        review_id integer PK
-        content varchar(1024)
-        is_positive boolean
-        user_id integer FK
-        film_id integer FK
-        useful integer
-    }
-
-    review_likes {
+    REVIEW_LIKES {
         review_id integer PK, FK
         user_id integer PK, FK
         is_useful boolean
     }
-        
 
-    users ||--|{ likes: contains
-    films ||--|{ likes: contains
-    users ||--|{ friendship: contains
-    films ||--|{ film_genres: contains
-    film_genres ||--|{ genres: contains
-    films ||--|{ mpa: contains
-    users ||--|{ reviews: creates
-    films ||--|{ reviews: contains
-    reviews ||--|{ review_likes: receives
-    users ||--|{ review_likes: likes
+    USERS ||--|{ LIKES: contains
+    FILMS ||--|{ LIKES: contains
+    USERS ||--|{ FRIENDSHIP: contains
+    FILMS ||--|{ FILM_GENRES: contains
+    FILM_GENRES ||--|{ GENRES: contains
+    FILMS ||--|{ MPA: contains
+    USERS ||--|{ REVIEWS: creates
+    FILMS ||--|{ REVIEWS: contains
+    REVIEWS ||--|{ REVIEW_LIKES: receives
+    USERS ||--|{ REVIEW_LIKES: likes
+
 ```
