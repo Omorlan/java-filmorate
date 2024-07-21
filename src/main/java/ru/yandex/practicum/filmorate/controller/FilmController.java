@@ -80,4 +80,19 @@ public class FilmController {
     public List<Film> getByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
         return filmService.getByDirector(directorId, sortBy);
     }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam(value = "query") String query, @RequestParam(value = "by") String by) {
+        switch (by) {
+            case "title":
+                return filmService.searchByTitle(query);
+            case "director":
+                return filmService.searchByDirector(query);
+            case "title,director":
+            case "director,title":
+                return filmService.serchByTitleAndDirector(query);
+            default:
+                throw new ValidationException("Invalid parameter value");
+        }
+    }
 }
