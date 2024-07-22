@@ -19,12 +19,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -186,36 +181,48 @@ public class FilmStorageDb implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(Long count) {
+    public List<Film> getPopularFilms(Long count, Long genreId, Integer year) {
         log.info("Fetching top {} popular films", count);
         final String sqlQuery = """
                 SELECT f.*,
-                       m.mpa_id, m.mpa_name,
-                       g.genre_id, g.genre_name,
-                       d.director_id, d.director_name,
-                       l.user_id AS like_user_id
-                FROM (
-                    SELECT f.film_id, COUNT(l.user_id) as like_count
-                    FROM films f
-                    LEFT JOIN likes l ON f.film_id = l.film_id
-                    GROUP BY f.film_id
-                    ORDER BY like_count DESC
-                    LIMIT ?
-                ) popular
-                JOIN films f ON popular.film_id = f.film_id
-                JOIN mpa m ON f.mpa_id = m.mpa_id
-                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
-                LEFT JOIN genres g ON fg.genre_id = g.genre_id
-                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
-                LEFT JOIN directors d ON fd.director_id = d.director_id
-                LEFT JOIN likes l ON f.film_id = l.film_id
-                ORDER BY popular.like_count DESC, f.film_id
+                 m.mpa_id, m.mpa_name,
+                 g.genre_id, g.genre_name,
+                 l.user_id AS like_user_id,
+                 d.director_id, d.director_name
+                 FROM films f
+                 JOIN mpa m ON f.mpa_id = m.mpa_id
+                 LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                 LEFT JOIN likes l ON f.film_id = l.film_id
+                 LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                 LEFT JOIN directors d ON fd.director_id = d.director_id
+                 JOIN (
+                 SELECT l.FILM_ID, COUNT(l.USER_ID) count_like
+                 		FROM LIKES l
+                 		%s
+                 		GROUP BY l.FILM_ID
+                 		ORDER BY COUNT(l.USER_ID) DESC
+                 		LIMIT ?
+                 ) t ON t.FILM_ID = f.FILM_ID
+                 ORDER BY t.count_like DESC
                 """;
-        List<Film> popularFilms = jdbcTemplate.query(sqlQuery, filmMapper, count);
+        String condition = " ";
+        List<Object> params = new ArrayList<>();
+        if (genreId != null) {
+            condition = condition + " JOIN FILM_GENRES fg ON fg.FILM_ID = l.FILM_ID AND fg.GENRE_ID = ? ";
+            params.add(genreId);
+        }
+        if (year != null) {
+            condition = condition + " JOIN films f ON l.FILM_ID = f.FILM_ID AND YEAR(f.FILM_RELEASEDATE) = ? ";
+            params.add(year);
+        }
+        params.add(count);
+        String sql = String.format(sqlQuery, condition);
+
+        List<Film> popularFilms = jdbcTemplate.query(sql, filmMapper, params.toArray());
         log.info("Fetched {} popular films", popularFilms.size());
         return popularFilms;
     }
-
 
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
