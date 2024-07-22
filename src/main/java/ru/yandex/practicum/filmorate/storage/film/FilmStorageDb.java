@@ -153,6 +153,77 @@ public class FilmStorageDb implements FilmStorage {
     }
 
     @Override
+    public List<Film> searchByTitle(String query) {
+        log.info("Search by title: {}", query);
+        final String sqlQuery = """
+                SELECT f.*,
+                           m.mpa_id, m.mpa_name,
+                           g.genre_id, g.genre_name,
+                           l.user_id AS like_user_id,
+                           d.director_id, d.director_name
+                FROM FILMS f
+                JOIN mpa m ON f.mpa_id = m.mpa_id
+                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN likes l ON f.film_id = l.film_id
+                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE LOWER(f.FILM_NAME) LIKE ?
+                """;
+        List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper, "%" + query.toLowerCase() + "%");
+        log.info("Found {} films", films.size());
+        return films;
+    }
+
+    @Override
+    public List<Film> searchByDirector(String query) {
+        log.info("Search by director: {}", query);
+        final String sqlQuery = """
+                SELECT f.*,
+                           m.mpa_id, m.mpa_name,
+                           g.genre_id, g.genre_name,
+                           l.user_id AS like_user_id,
+                           d.director_id, d.director_name
+                FROM FILMS f
+                JOIN mpa m ON f.mpa_id = m.mpa_id
+                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN likes l ON f.film_id = l.film_id
+                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE LOWER(d.DIRECTOR_NAME) LIKE ?
+                """;
+        List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper, "%" + query.toLowerCase() + "%");
+        log.info("Found {} films", films.size());
+        return films;
+    }
+
+    @Override
+    public List<Film> searchByTitleAndDirector(String query) {
+        log.info("Search by title and director: {}", query);
+        final String sqlQuery = """
+                SELECT f.*,
+                           m.mpa_id, m.mpa_name,
+                           g.genre_id, g.genre_name,
+                           l.user_id AS like_user_id,
+                           d.director_id, d.director_name
+                FROM FILMS f
+                JOIN mpa m ON f.mpa_id = m.mpa_id
+                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN likes l ON f.film_id = l.film_id
+                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE LOWER(d.DIRECTOR_NAME) LIKE ?
+                OR LOWER(f.FILM_NAME) LIKE ?
+                """;
+        List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper, "%" + query.toLowerCase() + "%",
+                "%" + query.toLowerCase() + "%");
+        log.info("Found {} films", films.size());
+        return films;
+    }
+
+    @Override
     public void addLike(Long id, Long userId) {
         log.info("Adding like to film with id: {} from user with id: {}", id, userId);
         getFilmById(id);
@@ -389,4 +460,5 @@ public class FilmStorageDb implements FilmStorage {
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new));
     }
+
 }
