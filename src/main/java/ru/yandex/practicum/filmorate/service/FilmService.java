@@ -55,8 +55,8 @@ public class FilmService {
         filmStorageDb.deleteLike(filmId, userId);
     }
 
-    public List<Film> getPopularFilms(Long count) {
-        return filmStorageDb.getPopularFilms(count);
+    public List<Film> getPopularFilms(Long count, Long genreId, Integer year) {
+        return filmStorageDb.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
