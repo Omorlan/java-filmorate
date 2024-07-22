@@ -22,4 +22,9 @@ public interface FilmStorage {
     void deleteLike(Long id, Long userId);
 
     List<Film> getPopularFilms(Long count);
+
+    List<Film> getCommonFilms(Long userId, Long friendId);
+
+    List<Film> getByDirector(int directorId, String sortBy);
+
 }
