@@ -19,7 +19,6 @@ public class UserService {
     private final UserStorageDb userStorageDb;
     private final FeedService feedService;
 
-
     public User getUser(Long id) {
         return userStorageDb.getUserById(id);
     }

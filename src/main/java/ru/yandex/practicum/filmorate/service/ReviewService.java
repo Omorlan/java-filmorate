@@ -17,6 +17,7 @@ import java.util.List;
 public class ReviewService {
     private final ReviewStorageDb reviewStorageDb;
     private final FeedService feedService;
+
     public Review create(Review review) {
         Review result = reviewStorageDb.create(review);
         feedService.createEvent(
