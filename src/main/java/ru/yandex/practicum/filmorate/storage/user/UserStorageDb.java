@@ -57,7 +57,7 @@ public class UserStorageDb implements UserStorage {
     }
 
     @Override
-    public void remove(Long id) {
+    public void delete(Long id) {
         log.info("Removing user with id: {}", id);
         String sqlQuery = "delete from users WHERE user_id = ?";
         int rowsAffected = jdbcTemplate.update(sqlQuery, id);
@@ -109,7 +109,7 @@ public class UserStorageDb implements UserStorage {
             throw new NotFoundException("User id = " + id + " not found");
         }
         log.info("User with id {} fetched successfully", id);
-        return users.get(0);
+        return users.getFirst();
     }
 
     @Override
@@ -144,7 +144,7 @@ public class UserStorageDb implements UserStorage {
                 return stmt;
             });
             log.info("Friend request from user with id {} to user with id {} created", id, friendId);
-        } else if (existingStatus.get(0).equals("unconfirmed")) {
+        } else if (existingStatus.getFirst().equals("unconfirmed")) {
             jdbcTemplate.update(connection -> {
                 PreparedStatement stmt = connection.prepareStatement(queryUpdate);
                 stmt.setLong(1, id);
