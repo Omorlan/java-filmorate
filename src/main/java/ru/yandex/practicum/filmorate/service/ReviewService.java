@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.OperationType;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorageDb;
 
 import java.util.List;
@@ -14,16 +16,37 @@ import java.util.List;
 @Service
 public class ReviewService {
     private final ReviewStorageDb reviewStorageDb;
-
+    private final FeedService feedService;
     public Review create(Review review) {
-        return reviewStorageDb.create(review);
+        Review result = reviewStorageDb.create(review);
+        feedService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                OperationType.ADD,
+                result.getReviewId()
+        );
+        return result;
     }
 
     public Review update(Review review) {
-        return reviewStorageDb.update(review);
+        Review result = reviewStorageDb.update(review);
+        feedService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                OperationType.UPDATE,
+                result.getReviewId()
+        );
+        return result;
     }
 
     public void remove(Long id) {
+        Review review = getReview(id);
+        feedService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                OperationType.REMOVE,
+                id
+        );
         reviewStorageDb.remove(id);
     }
 
@@ -33,7 +56,7 @@ public class ReviewService {
 
     public Review getReview(Long id) {
         return reviewStorageDb.getReview(id).orElseThrow(
-                () -> new NotFoundException("Отзыв с id = " + id + " не найден"));
+                () -> new NotFoundException("Review with id = " + id + " not found"));
     }
 
     public List<Review> getReviewsByFilm(Long filmId, int count) {
