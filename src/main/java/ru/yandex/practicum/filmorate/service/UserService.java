@@ -30,8 +30,8 @@ public class UserService {
         return userStorageDb.create(user);
     }
 
-    public void remove(Long id) {
-        userStorageDb.remove(id);
+    public void delete(Long id) {
+        userStorageDb.delete(id);
     }
 
     public User update(User user) {

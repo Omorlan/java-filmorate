@@ -62,7 +62,7 @@ public class FilmStorageDb implements FilmStorage {
     }
 
     @Override
-    public void remove(Long id) {
+    public void delete(Long id) {
         log.info("Removing film with id: {}", id);
         String sqlQuery = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(sqlQuery, id);
@@ -268,10 +268,11 @@ public class FilmStorageDb implements FilmStorage {
                  LEFT JOIN film_directors fd ON f.film_id = fd.film_id
                  LEFT JOIN directors d ON fd.director_id = d.director_id
                  JOIN (
-                 SELECT l.FILM_ID, COUNT(l.USER_ID) count_like
+                 SELECT ff.FILM_ID, COUNT(l.USER_ID) count_like
                  		FROM LIKES l
+                 		RIGHT JOIN films ff ON l.FILM_ID = ff.FILM_ID
                  		%s
-                 		GROUP BY l.FILM_ID
+                 		GROUP BY ff.FILM_ID
                  		ORDER BY COUNT(l.USER_ID) DESC
                  		LIMIT ?
                  ) t ON t.FILM_ID = f.FILM_ID

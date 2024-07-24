@@ -31,8 +31,8 @@ public class FilmService {
         return filmStorageDb.update(film);
     }
 
-    public void remove(Long id) {
-        filmStorageDb.remove(id);
+    public void delete(Long id) {
+        filmStorageDb.delete(id);
     }
 
 
