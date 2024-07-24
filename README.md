@@ -3,7 +3,7 @@ Template repository for Filmorate project.
 ```mermaid
 erDiagram
     USERS {
-        user_id integer PK
+        user_id bigint PK
         user_name varchar(128)
         user_login varchar(40)
         user_email varchar(128)
@@ -11,52 +11,52 @@ erDiagram
     }
 
     FILMS {
-        film_id integer PK
+        film_id bigint PK
         film_name varchar(256)
         film_description varchar(256)
-        film_duration integer
+        film_duration bigint
         film_releaseDate timestamp
-        mpa_id integer FK
+        mpa_id bigint FK
     }
 
     FRIENDSHIP {
-        accepting_user_id integer PK, FK
-        requesting_user_id integer PK, FK
+        accepting_user_id bigint PK, FK
+        requesting_user_id bigint PK, FK
         status varchar(40)
     }
 
     LIKES {
-        film_id integer PK
-        user_id integer PK
+        film_id bigint PK
+        user_id bigint PK
     }
 
     GENRES {
-        genre_id integer PK
+        genre_id bigint PK
         genre_name varchar(128)
     }
 
     MPA {
-        mpa_id integer PK
+        mpa_id bigint PK
         mpa_name varchar(40)
     }
 
     FILM_GENRES {
-        film_id integer PK, FK
-        genre_id integer PK, FK
+        film_id bigint PK, FK
+        genre_id bigint PK, FK
     }
 
     REVIEWS {
-        review_id integer PK
+        review_id bigint PK
         content varchar(1024)
         is_positive boolean
-        user_id integer FK
-        film_id integer FK
-        useful integer
+        user_id bigint FK
+        film_id bigint FK
+        useful bigint
     }
 
     REVIEW_LIKES {
-        review_id integer PK, FK
-        user_id integer PK, FK
+        review_id bigint PK, FK
+        user_id bigint PK, FK
         is_useful boolean
     }
 
