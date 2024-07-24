@@ -7,7 +7,7 @@ import java.util.List;
 public interface DirectorStorage {
     List<Director> getAll();
 
-    Director getById(int id);
+    Director getById(long id);
 
     Director create(Director director);
 

@@ -71,7 +71,7 @@ public class FilmMapper implements ResultSetExtractor<List<Film>> {
     }
 
     private void addDirectorIfPresent(ResultSet rs, Film film) throws SQLException {
-        int directorId = rs.getInt("director_id");
+        Long directorId = rs.getLong("director_id");
         if (!rs.wasNull()) {
             String directorName = rs.getString("director_name");
             Director director = new Director(directorId, directorName);
