@@ -227,6 +227,7 @@ public class FilmStorageDb implements FilmStorage {
     public void addLike(Long id, Long userId) {
         log.info("Adding like to film with id: {} from user with id: {}", id, userId);
         getFilmById(id);
+        deleteLike(id, userId);
         final String sqlQuery = """
                 INSERT INTO likes (film_id, user_id)
                 VALUES(?,?)
