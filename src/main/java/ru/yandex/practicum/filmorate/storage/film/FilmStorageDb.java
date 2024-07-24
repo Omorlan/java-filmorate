@@ -365,7 +365,7 @@ public class FilmStorageDb implements FilmStorage {
                     return;
                 }
                 ps.setLong(1, film.getId());
-                ps.setInt(2, director.getId());
+                ps.setLong(2, director.getId());
             }
 
             @Override
@@ -380,7 +380,7 @@ public class FilmStorageDb implements FilmStorage {
         Map<Integer, Genre> genres = jdbcTemplate.query("SELECT * FROM genres", GenreMapper::makeGenre).stream()
                 .collect(Collectors.toMap(Genre::getId, Function.identity()));
 
-        Map<Integer, Director> directors = jdbcTemplate.query("SELECT * FROM directors", DirectorMapper::makeDirector)
+        Map<Long, Director> directors = jdbcTemplate.query("SELECT * FROM directors", DirectorMapper::makeDirector)
                 .stream()
                 .collect(Collectors.toMap(Director::getId, Function.identity()));
 
@@ -403,7 +403,7 @@ public class FilmStorageDb implements FilmStorage {
             while (rs.next()) {
                 film = films.get(rs.getLong("film_id"));
                 if (film != null) {
-                    Director director = directors.get(rs.getInt("director_id"));
+                    Director director = directors.get(rs.getLong("director_id"));
                     film.getDirectors().add(director);
                 }
             }

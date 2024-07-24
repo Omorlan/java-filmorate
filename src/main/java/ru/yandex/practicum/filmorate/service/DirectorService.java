@@ -16,7 +16,7 @@ public class DirectorService {
         return directorStorage.getAll();
     }
 
-    public Director getById(int directorId) {
+    public Director getById(long directorId) {
         return directorStorage.getById(directorId);
     }
 

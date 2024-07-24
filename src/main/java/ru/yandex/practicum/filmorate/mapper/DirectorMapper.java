@@ -7,6 +7,6 @@ import java.sql.SQLException;
 
 public class DirectorMapper {
     public static Director makeDirector(ResultSet rs, int rowNum) throws SQLException {
-        return new Director(rs.getInt("director_id"), rs.getString("director_name"));
+        return new Director(rs.getLong("director_id"), rs.getString("director_name"));
     }
 }

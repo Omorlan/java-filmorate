@@ -28,7 +28,7 @@ public class DirectorStorageDb implements DirectorStorage {
     }
 
     @Override
-    public Director getById(int id) {
+    public Director getById(long id) {
         log.info("Fetching director with id: {}", id);
         String sql = "SELECT * FROM directors WHERE director_id = ?";
         Optional<Director> optionalDirector = jdbcTemplate.query(sql, DirectorMapper::makeDirector, id)
@@ -58,7 +58,7 @@ public class DirectorStorageDb implements DirectorStorage {
             return stmt;
         }, keyHolder);
 
-        Integer id = Objects.requireNonNull(keyHolder.getKeyAs(Integer.class));
+        Long id = Objects.requireNonNull(keyHolder.getKeyAs(Long.class));
         director.setId(id);
 
         log.info("Director created: {}", director);
