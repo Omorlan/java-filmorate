@@ -168,7 +168,15 @@ public class FilmStorageDb implements FilmStorage {
                 LEFT JOIN likes l ON f.film_id = l.film_id
                 LEFT JOIN film_directors fd ON f.film_id = fd.film_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
+                JOIN (
+                    SELECT ff.FILM_ID, COUNT(l.USER_ID) count_like
+                    FROM LIKES l
+                    RIGHT JOIN films ff ON l.FILM_ID = ff.FILM_ID
+                    GROUP BY ff.FILM_ID
+                    ORDER BY COUNT(l.USER_ID) DESC
+                    ) t ON t.FILM_ID = f.FILM_ID
                 WHERE LOWER(f.FILM_NAME) LIKE ?
+                ORDER BY t.count_like DESC
                 """;
         List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper, "%" + query.toLowerCase() + "%");
         log.info("Found {} films", films.size());
@@ -191,7 +199,15 @@ public class FilmStorageDb implements FilmStorage {
                 LEFT JOIN likes l ON f.film_id = l.film_id
                 LEFT JOIN film_directors fd ON f.film_id = fd.film_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
+                JOIN (
+                    SELECT ff.FILM_ID, COUNT(l.USER_ID) count_like
+                    FROM LIKES l
+                    RIGHT JOIN films ff ON l.FILM_ID = ff.FILM_ID
+                    GROUP BY ff.FILM_ID
+                    ORDER BY COUNT(l.USER_ID) DESC
+                    ) t ON t.FILM_ID = f.FILM_ID
                 WHERE LOWER(d.DIRECTOR_NAME) LIKE ?
+                ORDER BY t.count_like DESC
                 """;
         List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper, "%" + query.toLowerCase() + "%");
         log.info("Found {} films", films.size());
@@ -214,8 +230,16 @@ public class FilmStorageDb implements FilmStorage {
                 LEFT JOIN likes l ON f.film_id = l.film_id
                 LEFT JOIN film_directors fd ON f.film_id = fd.film_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
+                JOIN (
+                    SELECT ff.FILM_ID, COUNT(l.USER_ID) count_like
+                    FROM LIKES l
+                    RIGHT JOIN films ff ON l.FILM_ID = ff.FILM_ID
+                    GROUP BY ff.FILM_ID
+                    ORDER BY COUNT(l.USER_ID) DESC
+                    ) t ON t.FILM_ID = f.FILM_ID
                 WHERE LOWER(d.DIRECTOR_NAME) LIKE ?
                 OR LOWER(f.FILM_NAME) LIKE ?
+                ORDER BY t.count_like DESC
                 """;
         List<Film> films = jdbcTemplate.query(sqlQuery, filmMapper, "%" + query.toLowerCase() + "%",
                 "%" + query.toLowerCase() + "%");
