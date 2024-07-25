@@ -33,7 +33,7 @@ public class ReviewService {
     public Review update(Review review) {
         Review result = reviewStorageDb.update(review);
         feedService.createEvent(
-                review.getUserId(),
+                result.getUserId(),
                 EventType.REVIEW,
                 OperationType.UPDATE,
                 result.getReviewId()

@@ -13,7 +13,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FeedService {
-
     private final FeedStorage feedStorage;
 
     public void createEvent(Long userId, EventType eventType, OperationType operation, Long entityId) {
