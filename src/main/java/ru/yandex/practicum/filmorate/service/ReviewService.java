@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.OperationType;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorageDb;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -61,7 +62,9 @@ public class ReviewService {
     }
 
     public List<Review> getReviewsByFilm(Long filmId, int count) {
-        return reviewStorageDb.getReviewsByFilm(filmId, count);
+        return reviewStorageDb.getReviewsByFilm(filmId, count).stream()
+                .sorted(Comparator.comparingLong(Review::getUseful).reversed())
+                .toList();
     }
 
     public void addLike(Long reviewId, Long userId) {
