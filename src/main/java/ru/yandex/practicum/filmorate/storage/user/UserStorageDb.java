@@ -206,7 +206,7 @@ public class UserStorageDb implements UserStorage {
                                      l2.user_id AS user2_id
                               FROM likes AS l1
                                        JOIN likes AS l2 ON l1.film_id = l2.film_id
-                              WHERE l1.user_id < l2.user_id
+                              WHERE l1.user_id != l2.user_id
                                 AND l1.user_id = ?
                               GROUP BY user1_id, user2_id)
                 SELECT f.*,
