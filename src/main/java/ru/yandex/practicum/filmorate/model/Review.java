@@ -18,16 +18,14 @@ public class Review {
     @NotNull(groups = Marker.Delete.class)
     @Positive(groups = Marker.Delete.class, message = "Delete target id must be > 0")
     private Long reviewId;
-    @NotBlank
+    @NotBlank(message = "Content cannot be empty")
     @Size(max = 1024)
     private String content;
     @NotNull
     private Boolean isPositive;
     @NotNull
-    @Positive
     private Long userId;
     @NotNull
-    @Positive
     private Long filmId;
     private Long useful;
 }
