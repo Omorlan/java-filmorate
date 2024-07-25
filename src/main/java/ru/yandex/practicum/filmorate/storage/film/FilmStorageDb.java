@@ -324,25 +324,24 @@ public class FilmStorageDb implements FilmStorage {
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         String query = """
-                SELECT f.*
-                     , m.mpa_id
-                     , m.mpa_name
-                     , g.genre_id
-                     , g.genre_name
-                     , l.user_id AS like_user_id
-                     , d.director_id
-                     , d.director_name
-                FROM films AS f
-                         INNER JOIN likes AS l1 ON l1.film_id = f.film_id
-                         INNER JOIN likes AS l2 ON l2.film_id = f.film_id
-                         INNER JOIN mpa AS m ON m.mpa_id = f.mpa_id
-                         INNER JOIN film_genres AS fg ON fg.film_id = f.film_id
-                         INNER JOIN genres AS g ON g.genre_id = fg.genre_id
-                         INNER JOIN likes AS l ON f.film_id = l.film_id
-                         LEFT JOIN film_directors AS fd ON fd.film_id = f.film_id
-                         LEFT JOIN directors AS d ON fd.director_id = d.director_id
-                WHERE l1.user_id = ?
-                  AND l2.user_id = ?;
+                WITH temp AS (SELECT l1.film_id AS common_films
+                              FROM likes AS l1
+                                       INNER JOIN likes AS l2 ON l1.film_id = l2.film_id
+                              WHERE l1.user_id = ?
+                                AND l2.user_id = ?)
+                SELECT f.*,
+                       m.mpa_id, m.mpa_name,
+                       g.genre_id, g.genre_name,
+                       l.user_id AS like_user_id,
+                       d.director_id, d.director_name
+                FROM films f
+                    INNER JOIN temp ON temp.common_films = f.film_id
+                         JOIN mpa m ON f.mpa_id = m.mpa_id
+                         LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                         LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                         LEFT JOIN likes l ON f.film_id = l.film_id
+                         LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                         LEFT JOIN directors d ON fd.director_id = d.director_id;
                 """;
         return jdbcTemplate.query(query, filmMapper, userId, friendId);
     }
