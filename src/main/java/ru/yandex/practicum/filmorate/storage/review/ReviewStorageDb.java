@@ -202,6 +202,7 @@ public class ReviewStorageDb implements ReviewStorage {
 
     private boolean isReviewExists(Long reviewId) {
         final String sqlQuery = "SELECT EXISTS (SELECT 1 FROM reviews WHERE review_id = ?)";
-        return jdbcTemplate.queryForObject(sqlQuery, Boolean.class, reviewId);
+        Boolean exists = jdbcTemplate.queryForObject(sqlQuery, Boolean.class, reviewId);
+        return exists != null ? exists : false;
     }
 }
