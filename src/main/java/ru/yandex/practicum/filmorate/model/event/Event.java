@@ -8,15 +8,15 @@ import lombok.Data;
 @Builder
 public class Event {
     @NotNull
-    Long timestamp;
+    private Long timestamp;
     @NotNull
-    Long userId;
+    private Long userId;
     @NotNull
-    EventType eventType;
+    private EventType eventType;
     @NotNull
-    OperationType operation;
+    private OperationType operation;
     @NotNull
-    Long eventId;
+    private Long eventId;
     @NotNull
-    Long entityId;
+    private Long entityId;
 }
