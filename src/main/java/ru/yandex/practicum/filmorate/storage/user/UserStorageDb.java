@@ -9,7 +9,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -23,6 +25,7 @@ import java.util.Objects;
 @Getter
 public class UserStorageDb implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmMapper filmMapper;
 
     @Override
     public User create(User user) {
@@ -54,7 +57,7 @@ public class UserStorageDb implements UserStorage {
     }
 
     @Override
-    public void remove(Long id) {
+    public void delete(Long id) {
         log.info("Removing user with id: {}", id);
         String sqlQuery = "delete from users WHERE user_id = ?";
         int rowsAffected = jdbcTemplate.update(sqlQuery, id);
@@ -106,7 +109,7 @@ public class UserStorageDb implements UserStorage {
             throw new NotFoundException("User id = " + id + " not found");
         }
         log.info("User with id {} fetched successfully", id);
-        return users.get(0);
+        return users.getFirst();
     }
 
     @Override
@@ -141,7 +144,7 @@ public class UserStorageDb implements UserStorage {
                 return stmt;
             });
             log.info("Friend request from user with id {} to user with id {} created", id, friendId);
-        } else if (existingStatus.get(0).equals("unconfirmed")) {
+        } else if (existingStatus.getFirst().equals("unconfirmed")) {
             jdbcTemplate.update(connection -> {
                 PreparedStatement stmt = connection.prepareStatement(queryUpdate);
                 stmt.setLong(1, id);
@@ -193,4 +196,44 @@ public class UserStorageDb implements UserStorage {
         log.info("Fetched {} common friends for users with ids {} and {}", commonFriends.size(), id, otherId);
         return commonFriends;
     }
+
+    @Override
+    public List<Film> getRecommendations(Long userId) {
+        log.info("Fetching recommendations for user with id {}", userId);
+        String sql = """
+                WITH temp AS (SELECT COUNT(*)   AS count,
+                    l1.user_id AS user1_id,
+                    l2.user_id AS user2_id
+                    FROM likes AS l1
+                    JOIN likes AS l2 ON l1.film_id = l2.film_id
+                    WHERE l1.user_id != l2.user_id
+                    AND l1.user_id = ?
+                    GROUP BY user1_id, user2_id
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 1)
+                SELECT f.*,
+                    m.mpa_id, m.mpa_name,
+                    g.genre_id, g.genre_name,
+                    l.user_id AS like_user_id,
+                    d.director_id, d.director_name
+                FROM films f
+                JOIN mpa m ON f.mpa_id = m.mpa_id
+                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN likes l ON f.film_id = l.film_id
+                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE f.film_id IN (SELECT l5.film_id
+                    FROM likes l5
+                    JOIN temp ON l5.USER_ID = temp.user2_id
+                    LEFT JOIN LIKES l4 ON l5.FILM_ID = l4.film_id AND l4.user_id = ?
+                    WHERE l4.user_id IS null
+                    );
+                """;
+        List<Film> result = jdbcTemplate.query(sql, filmMapper, userId, userId);
+        log.info("Fetched {} recommendations for user with id {}", result, userId);
+        return result;
+    }
+
+
 }

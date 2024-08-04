@@ -1,22 +1,22 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.OperationType;
 import ru.yandex.practicum.filmorate.storage.user.UserStorageDb;
 
 import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorageDb userStorageDb;
-
-    @Autowired
-    public UserService(UserStorageDb userStorageDb) {
-        this.userStorageDb = userStorageDb;
-    }
+    private final FeedService feedService;
 
     public User getUser(Long id) {
         return userStorageDb.getUserById(id);
@@ -30,8 +30,8 @@ public class UserService {
         return userStorageDb.create(user);
     }
 
-    public void remove(Long id) {
-        userStorageDb.remove(id);
+    public void delete(Long id) {
+        userStorageDb.delete(id);
     }
 
     public User update(User user) {
@@ -40,11 +40,13 @@ public class UserService {
 
     public void addFriend(Long userId, Long targetId) {
         userStorageDb.addFriend(userId, targetId);
+        feedService.createEvent(userId, EventType.FRIEND, OperationType.ADD, targetId);
         log.info("Friend added successfully");
     }
 
     public void removeFriend(Long userId, Long targetId) {
         userStorageDb.removeFriend(userId, targetId);
+        feedService.createEvent(userId, EventType.FRIEND, OperationType.REMOVE, targetId);
         log.info("Friend removed successfully");
     }
 
@@ -56,5 +58,7 @@ public class UserService {
         return userStorageDb.getUserFriends(id);
     }
 
-
+    public List<Film> getRecommendations(Long userId) {
+        return userStorageDb.getRecommendations(userId);
+    }
 }

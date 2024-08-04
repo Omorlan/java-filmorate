@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,7 @@ public class FilmController {
 
     @DeleteMapping("/{id}")
     public void deleteFilmById(@PathVariable Long id) {
-        filmService.remove(id);
+        filmService.delete(id);
     }
 
     @GetMapping("/{id}")
@@ -65,7 +66,34 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Long count) {
-        return filmService.getPopularFilms(count);
+    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Long count,
+                                      @RequestParam(value = "genreId", defaultValue = "") Long genreId,
+                                      @RequestParam(value = "year", defaultValue = "") Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam(value = "userId") @Positive Long userId, @RequestParam(value = "friendId") @Positive Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
+        return filmService.getByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam(value = "query") String query, @RequestParam(value = "by") String by) {
+        switch (by) {
+            case "title":
+                return filmService.searchByTitle(query);
+            case "director":
+                return filmService.searchByDirector(query);
+            case "title,director":
+            case "director,title":
+                return filmService.serchByTitleAndDirector(query);
+            default:
+                throw new ValidationException("Invalid parameter value");
+        }
     }
 }

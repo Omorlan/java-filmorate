@@ -29,5 +29,6 @@ public class Film {
     private Set<Long> likes;
     private LinkedHashSet<Genre> genres;
     private Mpa mpa;
+    private LinkedHashSet<Director> directors;
 
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface UserStorage {
 
     User create(User user);
 
-    void remove(Long id);
+    void delete(Long id);
 
     void addFriend(Long id, Long friendId);
 
@@ -24,4 +25,6 @@ public interface UserStorage {
     List<User> getUserFriends(Long id);
 
     List<User> getSameFriends(Long id, Long otherId);
+
+    List<Film> getRecommendations(Long userId);
 }
